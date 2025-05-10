@@ -1,7 +1,13 @@
 /**
- * Создает SVG-иконку для уведомления в зависимости от типа
+ * Создает SVG-иконку для уведомления в зависимости от типа.
  * @param {string} variant - Тип уведомления ('info', 'warning', 'error', 'success')
- * @returns {string} SVG-иконка в виде строки
+ * @returns {string} SVG-иконка в виде строки.
+ */
+
+const activeNotifications = [] /*используем для хранения всех активных уведомлений этот массив.
+
+/**
+ * Возвращаем SVG-иконку по типу уведомления.
  */
 const getIconSVG = (variant) => {
   const icons = {
@@ -11,4 +17,44 @@ const getIconSVG = (variant) => {
     success: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M6.0625 9.91412L8.9375 12.7891L13.1875 8.53912L12.5391 7.89062L8.9375 11.4922L7.46094 10.0156L6.8125 10.6641L6.0625 9.91412ZM10 1.25C5.125 1.25 1.25 5.125 1.25 10C1.25 14.875 5.125 18.75 10 18.75C14.875 18.75 18.75 14.875 18.75 10C18.75 5.125 14.875 1.25 10 1.25Z" fill="#0cad39"/></svg>`,
   }
   return icons[variant] || icons.info
+}
+
+/**
+ * Создаем HTML-элемент уведомления.
+ */
+const createNotification = ({ variant = 'info', title = 'Title', subtitle = 'Subtitle' }) => {
+  const el = document.createElement('div')
+  el.className = `notification notification-${variant}`
+  el.innerHTML = `
+    <div class="notification-icon">${getIconSVG(variant)}</div>
+    <div class="notification-content">
+      <span class="notification-title">${title}</span>
+      <span class="notification-subtitle">${subtitle}</span>
+    </div>
+    <button class="notification-close">×</button>
+  `
+  return el
+}
+
+/**
+ * Удаляем уведомление с экрана.
+ */
+const closeNotification = (el) => {
+  el.remove()
+  const i = activeNotifications.indexOf(el)
+  if (i > -1) activeNotifications.splice(i, 1)
+}
+
+/**
+ * Показываем уведомление.
+ */
+export const showNotification = (options) => {
+  const el = createNotification(options)
+  document.body.appendChild(el)
+  activeNotifications.push(el)
+
+  el.querySelector('.notification-close').onclick = () => closeNotification(el)
+  setTimeout(() => closeNotification(el), 5000)
+
+  return el
 }
